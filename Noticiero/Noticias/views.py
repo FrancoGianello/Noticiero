@@ -1,31 +1,22 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
-from django.template import loader
 from .models import Noticia, Autor
 # Create your views here.
 
 def index(request):
-    noticias = Noticia.objects.all().order_by("-id")
-    template = loader.get_template("Noticias/index.html")
-    context = {
-        "noticias" : noticias,
-    }
-    return HttpResponse(template.render(context, request))
+    return render(request,"Noticias/index.html", {
+        "noticias": Noticia.objects.all().order_by("-id"),
+        })
 
 def detalle(request, detalle):
-    noticia = Noticia.objects.get(titulo=detalle)
-    template = loader.get_template("Noticias/detalle.html")
-    context = {
-        "noticia" : noticia,
-    }
-    return HttpResponse(template.render(context, request))
+    return render(request, "Noticias/detalle.html",{
+        "noticia":get_object_or_404(Noticia, titulo=detalle),
+    })
 
-def autor(request, autor):
+def autor(request, autor):    
     autor = Autor.objects.get(nombre=autor)
-    noticiasAutor = Noticia.objects.filter(autor=autor)
-    template = loader.get_template("Noticias/autor.html")
-    context = {
-        "noticias" :noticiasAutor,
-        "autor" : autor,
-    }
-    return HttpResponse(template.render(context, request))
+    # Es IMPORTANTISIMO coger el nombre, porque al hacer la query de noticias por autor hay que comparar con una consulta previa
+    return render(request, "Noticias/autor.html", {
+        "autor" : get_object_or_404(Autor, nombre=autor),
+        "noticias" : Noticia.objects.filter(autor=autor),
+    })
